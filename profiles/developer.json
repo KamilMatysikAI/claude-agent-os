@@ -1,0 +1,54 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "WebSearch",
+      "WebFetch",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(npm test:*)"
+    ],
+    "deny": [
+      "Read(//**/.env*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(//**/credentials*)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Edit(//**/.env*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(//**/credentials*)",
+      "Edit(//**/*.pem)",
+      "Edit(//**/*.key)",
+      "Edit(agentos.toml)",
+      "Edit(agentos/**)",
+      "Edit(agentos.py)",
+      "Edit(//**/.claude/settings.json)",
+      "Edit(//**/.claude/settings.local.json)",
+      "Edit(.mcp.json)",
+      "Edit(//**/.git/**)",
+      "Edit(.agentos/**)",
+      "Bash(git push:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(git * --output*)",
+      "Bash(git * --no-index*)",
+      "Bash(git * --ext-diff*)",
+      "Bash(git * --textconv*)"
+    ],
+    "blockReadsOutsideWorkingDirectories": true
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": false,
+    "allowUnsandboxedCommands": false
+  }
+}

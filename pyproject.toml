@@ -1,0 +1,42 @@
+# Packaging for the engine and the panel. No runtime dependencies (stdlib only).
+# install.py runs `pip install <repo>` into <workspace>/.agentos/venv - a normal install,
+# so nothing in the workspace can shadow the package. Templates and the demo are copied by
+# install.py itself and are not part of the package.
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-agent-os"
+dynamic = ["version"]
+description = "A small company of agents for Claude Code, kept in plain Markdown files."
+requires-python = ">=3.11"
+dependencies = []
+license = { text = "MIT" }
+
+[project.scripts]
+agentos = "agentos.__main__:main"
+
+[tool.setuptools]
+include-package-data = false
+packages = [
+    "agentos",
+    "agentos.scheduler",
+    "agentos.profiles",
+    "panel",
+    "panel._idea_template",
+    "panel._add_idea",
+]
+
+[tool.setuptools.package-dir]
+"agentos.profiles" = "profiles"
+"panel._idea_template" = "template/ideas/.templates"
+"panel._add_idea" = "template/.claude/skills/add-idea/scripts"
+
+[tool.setuptools.package-data]
+"agentos.profiles" = ["*.json"]
+"panel" = ["static/*"]
+"panel._idea_template" = ["*.md"]
+
+[tool.setuptools.dynamic]
+version = { attr = "agentos.__version__" }

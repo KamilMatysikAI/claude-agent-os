@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(//**/.env*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(//**/credentials*)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Edit(//**/.env*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(//**/credentials*)",
+      "Edit(//**/*.pem)",
+      "Edit(//**/*.key)",
+      "Edit(agentos.toml)",
+      "Edit(agentos/**)",
+      "Edit(agentos.py)",
+      "Edit(//**/.claude/settings.json)",
+      "Edit(//**/.claude/settings.local.json)",
+      "Edit(.mcp.json)",
+      "Edit(//**/.git/**)",
+      "Edit(.agentos/**)"
+    ]
+  }
+}

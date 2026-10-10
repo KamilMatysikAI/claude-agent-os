@@ -1,0 +1,8 @@
+.agentos/
+__pycache__/
+*.pyc
+.venv/
+.env
+*.new
+build/
+*.egg-info/

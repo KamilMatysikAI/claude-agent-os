@@ -1,0 +1,29 @@
+# Demo workspace: a fictional online coffee subscription.
+# Used for panel screenshots and engine tests. All names and numbers are invented.
+
+owner_name = "Alex"
+language = "en"
+timezone = "Europe/Berlin"
+
+[queue]
+enabled = false
+profile = "safe"
+interval_minutes = 30
+timeout_minutes = 45
+max_tasks_per_run = 1
+claude_bin = "claude"
+model = ""
+cooldown_minutes = 0
+
+[projects]
+wip_limit = 5
+human_task_max_minutes = 15
+
+[notify]
+kind = "none"
+digest_hours = [8, 15, 21]
+
+[panel]
+enabled = false
+host = "127.0.0.1"
+port = 8777
