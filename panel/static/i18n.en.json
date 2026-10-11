@@ -10,6 +10,9 @@
   "nav.tasks": "All tasks",
   "nav.tree": "Tree",
   "nav.shortcuts": "Shortcuts",
+  "coffee.label": "Buy the author a coffee",
+  "coffee.title": "Optional tip for the author (opens Buy Me a Coffee)",
+  "coffee.url": "https://buymeacoffee.com/kamilmatysik",
 
   "lang.label": "Language",
   "lang.switch_title": "Switch the panel language (L)",

@@ -10,6 +10,9 @@
   "nav.tasks": "Wszystkie zadania",
   "nav.tree": "Drzewo",
   "nav.shortcuts": "Skróty",
+  "coffee.label": "Postaw kawę autorowi",
+  "coffee.title": "Opcjonalny napiwek dla autora (BLIK, przelew, buycoffee.to)",
+  "coffee.url": "https://buycoffee.to/kamilmatysik",
 
   "lang.label": "Język",
   "lang.switch_title": "Zmień język panelu (L)",
