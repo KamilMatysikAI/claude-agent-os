@@ -460,7 +460,11 @@ body.is-offline .needs-net { opacity: .45; pointer-events: none; }
   .row .end { position: relative; z-index: 1; pointer-events: none; }
   .hide-mobile { display: none; }
   details.group > summary, .act-proj > summary { min-height: 44px; }
-  .wait-row > div > a:not(.btn), .act-item .t, .row .ttl a { padding: 13px 0; margin: -13px 0; }
+  /* Row titles get their tap target from the row-wide ::after above, not from padding: padding on a
+     line-clamped box shows the clamped third line inside it, on top of the project name below. */
+  .wait-row > div > a:not(.btn), .act-item .t { padding: 13px 0; margin: -13px 0; }
+  .row .ttl a, .row .ttl button.open { padding: 0; margin: 0; }
+  .row .ttl .proj { display: block; }
   .facts a { display: inline-block; padding: 13px 6px; margin: -13px -6px; min-width: 44px; min-height: 44px; }
   details.ptree > summary a.pname { display: inline-flex; align-items: center; min-height: 44px; }
   .row .ttl a { display: -webkit-box; }
