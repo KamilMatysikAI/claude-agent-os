@@ -247,7 +247,7 @@ Those are mostly built around writing software or need a server. This one is fil
 Free and MIT. If it saved you a few hours, you can buy me a coffee (the **Sponsor** button at the top of this repo does the same):
 
 - [Buy Me a Coffee](https://buymeacoffee.com/kamilmatysik) (card, Apple Pay, Google Pay)
-- [buycoffee.to](TODO-BUYCOFFEE) (Poland: BLIK, bank transfer)
+- [buycoffee.to](https://buycoffee.to/kamilmatysik) (Poland: BLIK, bank transfer)
 
 A star helps other people find the repo.
 
@@ -277,7 +277,7 @@ Instalator tworzy w katalogu roboczym osobne środowisko Pythona (`.agentos/venv
 
 Zanim włączysz kolejkę, przeczytaj [SECURITY.md](SECURITY.md). `claude -p` uruchamiane z harmonogramu korzysta z Twojego konta Claude albo klucza API, a to, czy i ile automatycznej pracy wolno, zależy od planu i aktualnego regulaminu Anthropic. Najczystsza droga to klucz API.
 
-Licencja MIT. Jeśli oszczędziło Ci to kilka godzin, możesz postawić kawę: [buycoffee.to](TODO-BUYCOFFEE) (BLIK, przelew) albo [Buy Me a Coffee](https://buymeacoffee.com/kamilmatysik) (karta).
+Licencja MIT. Jeśli oszczędziło Ci to kilka godzin, możesz postawić kawę: [buycoffee.to](https://buycoffee.to/kamilmatysik) (BLIK, przelew) albo [Buy Me a Coffee](https://buymeacoffee.com/kamilmatysik) (karta).
 
 ---
 
