@@ -39,10 +39,24 @@ PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 
 
 class ActionError(Exception):
-    def __init__(self, message: str, status: int = 400):
+    """`message` is English (logs, API clients); `code` + `params` let the panel show the
+    same error in the owner's language (keys `srv.<code>` in the panel dictionaries)."""
+
+    def __init__(self, message: str, status: int = 400, code: str = "", **params):
         super().__init__(message)
         self.message = message
         self.status = status
+        self.code = code
+        self.params = {k: str(v) for k, v in params.items()}
+
+    def public(self) -> dict:
+        return {"error": self.message, "code": self.code, "params": self.params}
+
+
+def _msg(message: str, code: str, **params) -> dict:
+    """A success message with its translation key (see ActionError)."""
+    return {"message": message, "msg_code": code,
+            "msg_params": {k: str(v) for k, v in params.items()}}
 
 
 def _text(payload: dict, name: str, limit: int = MAX_TEXT) -> str:
@@ -50,17 +64,18 @@ def _text(payload: dict, name: str, limit: int = MAX_TEXT) -> str:
     if value is None:
         return ""
     if not isinstance(value, str):
-        raise ActionError(f"Field '{name}' must be text.")
+        raise ActionError(f"Field '{name}' must be text.", code="field_text", name=name)
     value = value.replace("\r\n", "\n").strip()
     if len(value) > limit:
-        raise ActionError(f"Field '{name}' is too long (max {limit} characters).")
+        raise ActionError(f"Field '{name}' is too long (max {limit} characters).",
+                          code="field_long", name=name, limit=limit)
     return value
 
 
 def _one_line(payload: dict, name: str, limit: int = MAX_TITLE) -> str:
     value = _text(payload, name, limit)
     if "\n" in value:
-        raise ActionError(f"Field '{name}' must be a single line.")
+        raise ActionError(f"Field '{name}' must be a single line.", code="field_line", name=name)
     return value
 
 
@@ -80,7 +95,8 @@ class Pending:
     def schedule(self, action: str, key: str, params: dict) -> dict:
         pid = secrets.token_hex(8)
         item = {"id": pid, "action": action, "key": key, "params": params,
-                "status": "pending", "error": "", "created": time.time()}
+                "status": "pending", "error": "", "error_code": "", "error_params": {},
+                "created": time.time()}
         timer = threading.Timer(self.delay, self._fire, args=(pid,))
         timer.daemon = True
         item["timer"] = timer
@@ -88,7 +104,7 @@ class Pending:
             self._gc()
             if any(i["key"] == key and i["status"] == "pending" for i in self._items.values()):
                 raise ActionError("Another action on this task is still in its undo window.",
-                                  409)
+                                  409, code="undo_busy")
             self._items[pid] = item
             self.ws.hidden_keys.add(key)
         timer.start()
@@ -98,10 +114,11 @@ class Pending:
         with self._lock:
             item = self._items.get(pid)
             if item is None:
-                raise ActionError("Nothing to undo: unknown or expired action.", 404)
+                raise ActionError("Nothing to undo: unknown or expired action.", 404,
+                                  code="undo_unknown")
             if item["status"] != "pending":
                 raise ActionError(f"Too late to undo: the action is already {item['status']}.",
-                                  409)
+                                  409, code="undo_late", state=item["status"])
             item["timer"].cancel()
             item["status"] = "undone"
             self.ws.hidden_keys.discard(item["key"])
@@ -129,15 +146,18 @@ class Pending:
             if item is None or item["status"] != "pending":
                 return
             item["status"] = "applying"
+        code, cparams = "", {}
         try:
             apply_delayed(self.ws, item["action"], item["key"], item["params"])
             status, error = "applied", ""
         except ActionError as exc:
-            status, error = "failed", exc.message
+            status, error, code, cparams = "failed", exc.message, exc.code, exc.params
         except Exception as exc:  # noqa: BLE001 - reported to the client, never raised
             status, error = "failed", f"Could not save: {exc}"
+            code, cparams = "save_failed", {"detail": str(exc)}
         with self._lock:
             item["status"], item["error"] = status, error
+            item["error_code"], item["error_params"] = code, cparams
             self.ws.hidden_keys.discard(item["key"])
         if status == "failed":
             core.log(self.ws.root, "panel", f"action {item['action']} {item['key']} failed: {error}")
@@ -150,58 +170,65 @@ class Pending:
 
     @staticmethod
     def public(item: dict) -> dict:
-        return {k: item[k] for k in ("id", "action", "key", "status", "error")}
+        return {k: item[k] for k in ("id", "action", "key", "status", "error",
+                                      "error_code", "error_params")}
 
 
 # ── validation ────────────────────────────────────────────────────────────────
 
 def _entry(ws: data.Workspace, key: str) -> data.Entry:
     if not isinstance(key, str) or not data.valid_key(key):
-        raise ActionError("Unknown task.", 404)
+        raise ActionError("Unknown task.", 404, code="unknown_task")
     entry = ws.find(key)
     if entry is None:
-        raise ActionError("Unknown task.", 404)
+        raise ActionError("Unknown task.", 404, code="unknown_task")
     return entry
 
 
 def validate(ws: data.Workspace, action: str, key: str, payload: dict) -> tuple[data.Entry, dict]:
     if action not in DELAYED + IMMEDIATE:
-        raise ActionError(f"Unknown action '{action}'.")
+        raise ActionError(f"Unknown action '{action}'.", code="unknown_action", action=action)
     entry = _entry(ws, key)
     t = entry.task
     if entry.archived:
-        raise ActionError(f"{_label(entry)} is archived. Archived tasks are read-only in the panel.")
+        raise ActionError(f"{_label(entry)} is archived. Archived tasks are read-only in the panel.",
+                          code="archived", id=_label(entry))
     closed = t.status in core.CLOSED_STATUSES
     params: dict = {}
     if action in DELAYED and closed:
-        raise ActionError(f"{_label(entry)} is already {t.status}.")
+        raise ActionError(f"{_label(entry)} is already {t.status}.", code="already_closed",
+                          id=_label(entry), state=t.status)
     if action == "done":
         evidence = _text(payload, "evidence", 1000)
         if not evidence and not str(t.get("evidence") or "").strip():
-            raise ActionError("Add evidence before closing: a file path, a link or a test result.")
+            raise ActionError("Add evidence before closing: a file path, a link or a test result.",
+                              code="evidence_required")
         if t.s("type") == "decision":
-            raise ActionError("Decisions are closed by accepting or rejecting them.")
+            raise ActionError("Decisions are closed by accepting or rejecting them.",
+                              code="decision_needs_decide")
         params = {"evidence": evidence, "note": _text(payload, "note")}
     elif action == "cancel":
         params = {"note": _text(payload, "note")}
     elif action == "decide":
         if t.s("type") != "decision":
-            raise ActionError(f"{_label(entry)} is not a decision.")
+            raise ActionError(f"{_label(entry)} is not a decision.", code="not_decision",
+                              id=_label(entry))
         accepted = payload.get("accepted")
         if not isinstance(accepted, bool):
-            raise ActionError("Say whether the decision is accepted (true) or rejected (false).")
+            raise ActionError("Say whether the decision is accepted (true) or rejected (false).",
+                              code="decide_bool")
         params = {"accepted": accepted, "note": _text(payload, "note")}
     elif action == "note":
         note = _text(payload, "note")
         if not note:
-            raise ActionError("The note is empty.")
+            raise ActionError("The note is empty.", code="note_empty")
         params = {"note": note}
     elif action == "edit":
         params = _validate_edit(entry, payload)
     elif action == "run-now":
-        reason = data.run_now_block_reason(entry)
+        code, rparams, reason = data.run_now_block(entry)
         if reason:
-            raise ActionError(reason)
+            raise ActionError(reason, code=code, **rparams)
     return entry, params
 
 
@@ -213,29 +240,31 @@ def _validate_edit(entry: data.Entry, payload: dict) -> dict:
     except OSError:
         current = ""
     if not base or base != current:
-        raise ActionError("This task changed since you opened it. Reload it and edit again.", 409)
+        raise ActionError("This task changed since you opened it. Reload it and edit again.", 409,
+                          code="changed_since")
     if "title" in payload:
         title = _one_line(payload, "title")
         if not title:
-            raise ActionError("The title cannot be empty.")
+            raise ActionError("The title cannot be empty.", code="title_empty")
         params["title"] = title
     if "priority" in payload:
         pr = _one_line(payload, "priority", 10).lower()
         if pr not in PRIORITIES:
-            raise ActionError("Priority must be high, normal or low.")
+            raise ActionError("Priority must be high, normal or low.", code="priority_invalid")
         params["priority"] = pr
     if "due" in payload:
         due = _one_line(payload, "due", 10)
         if due and core.parse_date(due) is None:
-            raise ActionError("Due date must look like 2026-10-20.")
+            raise ActionError("Due date must look like 2026-10-20.", code="due_invalid")
         params["due"] = due
     if "body" in payload:
         body = _text(payload, "body", 200_000)
         if re.search(r"^---\s*$", body.split("\n", 1)[0] if body else ""):
-            raise ActionError("The body cannot start with a frontmatter fence (---).")
+            raise ActionError("The body cannot start with a frontmatter fence (---).",
+                              code="body_frontmatter")
         params["body"] = body
     if not params:
-        raise ActionError("Nothing to change.")
+        raise ActionError("Nothing to change.", code="nothing_to_change")
     return params
 
 
@@ -244,10 +273,12 @@ def _validate_edit(entry: data.Entry, payload: dict) -> dict:
 def apply_delayed(ws: data.Workspace, action: str, key: str, params: dict) -> None:
     entry = _entry(ws, key)
     if entry.archived:
-        raise ActionError("The task was archived in the meantime; nothing was changed.")
+        raise ActionError("The task was archived in the meantime; nothing was changed.",
+                          code="archived_meantime")
     task = core.read_task(entry.task.path)   # fresh read: someone may have edited it
     if task.status in core.CLOSED_STATUSES:
-        raise ActionError(f"{task.id or key} was closed in the meantime ({task.status}).")
+        raise ActionError(f"{task.id or key} was closed in the meantime ({task.status}).",
+                          code="closed_meantime", id=task.id or key, state=task.status)
     now = ws.now()
     if action == "done":
         if params.get("note"):
@@ -256,7 +287,7 @@ def apply_delayed(ws: data.Workspace, action: str, key: str, params: dict) -> No
             core.set_status(task, "done", evidence=params.get("evidence") or None,
                             note="closed from the panel", now=now)
         except core.EvidenceRequired as exc:
-            raise ActionError(str(exc)) from exc
+            raise ActionError(str(exc), code="evidence_required") from exc
     elif action == "cancel":
         if params.get("note"):
             core.add_note(task, params["note"], now=now, write=False)
@@ -271,7 +302,7 @@ def apply_immediate(ws: data.Workspace, action: str, entry: data.Entry, params: 
     if action == "note":
         task = core.read_task(entry.task.path)
         core.add_note(task, params["note"], now=now)
-        return {"message": f"Note added to {_label(entry)}."}
+        return _msg(f"Note added to {_label(entry)}.", "note_added", id=_label(entry))
     if action == "edit":
         task = core.read_task(entry.task.path)
         for field in ("title", "priority", "due"):
@@ -281,10 +312,10 @@ def apply_immediate(ws: data.Workspace, action: str, entry: data.Entry, params: 
             body = params["body"]
             task.body = ("\n" + body.strip("\n") + "\n") if body.strip() else "\n"
         core.write_task_atomic(task)
-        return {"message": f"Saved {_label(entry)}."}
+        return _msg(f"Saved {_label(entry)}.", "saved", id=_label(entry))
     if action == "run-now":
         return run_now(ws, entry, spawn=spawn)
-    raise ActionError(f"Unknown action '{action}'.")
+    raise ActionError(f"Unknown action '{action}'.", code="unknown_action", action=action)
 
 
 def run_now(ws: data.Workspace, entry: data.Entry, spawn=None) -> dict:
@@ -292,16 +323,19 @@ def run_now(ws: data.Workspace, entry: data.Entry, spawn=None) -> dict:
     result = core.request_run_now(ws.root, rel, who="panel")
     if result == "busy":
         raise ActionError("The queue is reading its requests right now. Try again in a moment.",
-                          409)
+                          409, code="queue_busy")
     if result == "duplicate":
-        return {"message": f"{_label(entry)} is already waiting for a run.", "started": False}
+        return {**_msg(f"{_label(entry)} is already waiting for a run.", "run_already",
+                        id=_label(entry)), "started": False}
     core.append_progress(entry.task.path, "run requested from the panel", now=ws.now())
     starter = spawn or spawn_runner
     ok, detail = starter(ws.root, entry.task.path)
     if ok:
-        return {"message": f"Started a run for {_label(entry)}.", "started": True}
-    return {"message": (f"Queued {_label(entry)}. It will run on the next scheduled pass; "
-                        f"starting now failed: {detail}"), "started": False}
+        return {**_msg(f"Started a run for {_label(entry)}.", "run_started", id=_label(entry)),
+                "started": True}
+    return {**_msg(f"Queued {_label(entry)}. It will run on the next scheduled pass; "
+                   f"starting now failed: {detail}", "run_queued", id=_label(entry), detail=detail),
+            "started": False}
 
 
 def spawn_runner(workspace: Path, task_path: Path) -> tuple[bool, str]:
@@ -349,24 +383,25 @@ def create(ws: data.Workspace, payload: dict) -> dict:
     kind = _one_line(payload, "kind", 10) or "task"
     title = _one_line(payload, "title")
     if not title:
-        raise ActionError("Give it a title.")
+        raise ActionError("Give it a title.", code="title_required")
     details = _text(payload, "details")
     if kind == "idea":
         return _create_idea(ws, title, details)
     if kind != "task":
-        raise ActionError("Kind must be 'task' or 'idea'.")
+        raise ActionError("Kind must be 'task' or 'idea'.", code="kind_invalid")
     project = _one_line(payload, "project", 80)
     if project and project not in ws.projects():
-        raise ActionError("Unknown project.")
+        raise ActionError("Unknown project.", code="unknown_project")
     owner = (_one_line(payload, "owner", 20) or "ceo").lower()
     if owner not in core.ROLES:
-        raise ActionError(f"Owner must be one of: {', '.join(core.ROLES)}.")
+        raise ActionError(f"Owner must be one of: {', '.join(core.ROLES)}.", code="owner_invalid",
+                          roles=", ".join(core.ROLES))
     priority = (_one_line(payload, "priority", 10) or "normal").lower()
     if priority not in PRIORITIES:
-        raise ActionError("Priority must be high, normal or low.")
+        raise ActionError("Priority must be high, normal or low.", code="priority_invalid")
     due = _one_line(payload, "due", 10)
     if due and core.parse_date(due) is None:
-        raise ActionError("Due date must look like 2026-10-20.")
+        raise ActionError("Due date must look like 2026-10-20.", code="due_invalid")
     sections = {"Goal": details or title, "Progress log": ""}
     task = core.create_task(ws.root, title, owner=owner, project=project, priority=priority,
                             due=due or None, source="panel", sections=sections,
@@ -376,7 +411,12 @@ def create(ws: data.Workspace, payload: dict) -> dict:
         f"{data.INBOX}/{core.slugify(task.path.stem, max_len=160)}"
     where = "your list" if owner == "human" else ("the queue" if not project
                                                    else f"{project}")
-    return {"key": key, "id": task.id, "message": f"Created {task.id or title} in {where}."}
+    code = "created_mine" if owner == "human" else ("created_queue" if not project
+                                                    else "created_project")
+    name = ws.projects().get(project, {}).get("name", project) if project else ""
+    return {"key": key, "id": task.id,
+            **_msg(f"Created {task.id or title} in {where}.", code, id=task.id or title,
+                   project=name)}
 
 
 # Installed copy: packaged next to this module (see pyproject.toml); checkout: repo template/.
@@ -495,8 +535,10 @@ def _create_idea(ws: data.Workspace, title: str, details: str) -> dict:
         with os.fdopen(fd, "wb") as fh:
             fh.write(text.encode("utf-8"))
         _refresh_ideas_index(ws, folder)
-        return {"key": "", "id": "", "message": f"Saved the idea to ideas/{path.name}."}
-    raise ActionError("Could not find a free file name for the idea.", 500)
+        return {"key": "", "id": "",
+                **_msg(f"Saved the idea to ideas/{path.name}.", "idea_saved",
+                       file=f"ideas/{path.name}")}
+    raise ActionError("Could not find a free file name for the idea.", 500, code="idea_name")
 
 
 def parse_since(value: str) -> datetime | None:

@@ -34,6 +34,10 @@ STATIC_FILES = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/index.html": ("index.html", "text/html; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
+    "/tree.js": ("tree.js", "text/javascript; charset=utf-8"),
+    "/i18n.en.json": ("i18n.en.json", "application/json; charset=utf-8"),
+    "/i18n.pl.json": ("i18n.pl.json", "application/json; charset=utf-8"),
     "/styles.css": ("styles.css", "text/css; charset=utf-8"),
     "/favicon.svg": ("favicon.svg", "image/svg+xml"),
 }
@@ -92,8 +96,9 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(obj, ensure_ascii=False, default=str).encode("utf-8")
         self._send(status, body, "application/json; charset=utf-8")
 
-    def _error(self, status: int, message: str):
-        self._json({"ok": False, "error": message}, status)
+    def _error(self, status: int, message: str, code: str = "", params: dict | None = None):
+        # `code` + `params` let the panel translate the message (keys `srv.<code>`)
+        self._json({"ok": False, "error": message, "code": code, "params": params or {}}, status)
 
     def _host_ok(self) -> bool:
         host = (self.headers.get("Host") or "").strip().lower()
@@ -123,7 +128,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._api_get(path[len("/api/"):], qs)
         except Exception as exc:  # noqa: BLE001
             core.log(self.state.ws.root, "panel", f"GET {self.path} failed: {exc!r}")
-            return self._error(HTTPStatus.INTERNAL_SERVER_ERROR, "The panel hit an error. See .agentos/logs/panel.log.")
+            return self._error(HTTPStatus.INTERNAL_SERVER_ERROR,
+                               "The panel hit an error. See .agentos/logs/panel.log.", "server_error")
 
     def _static(self, path: str):
         name, ctype = STATIC_FILES[path]
@@ -146,11 +152,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(data.projects_payload(ws))
         if route == "tree":
             return self._json(data.tree_payload(ws))
+        if route == "orgtree":
+            return self._json(data.org_tree_payload(ws))
         if route.startswith("project/"):
             slug = unquote(route[len("project/"):])
             payload = data.project_payload(ws, slug)
             if payload is None:
-                return self._error(HTTPStatus.NOT_FOUND, "Unknown project.")
+                return self._error(HTTPStatus.NOT_FOUND, "Unknown project.", "unknown_project")
             return self._json(payload)
         if route == "activity":
             since = actions.parse_since(one("since"))
@@ -163,10 +171,10 @@ class Handler(BaseHTTPRequestHandler):
         if route.startswith("task/"):
             key = unquote(route[len("task/"):])
             if not data.valid_key(key):
-                return self._error(HTTPStatus.NOT_FOUND, "Unknown task.")
+                return self._error(HTTPStatus.NOT_FOUND, "Unknown task.", "unknown_task")
             entry = ws.find(key)
             if entry is None:
-                return self._error(HTTPStatus.NOT_FOUND, "Unknown task.")
+                return self._error(HTTPStatus.NOT_FOUND, "Unknown task.", "unknown_task")
             return self._json(data.task_payload(ws, entry))
         if route.startswith("pending/"):
             item = self.state.pending.get(route[len("pending/"):])
@@ -210,16 +218,18 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, **result}, HTTPStatus.CREATED)
             return self._error(HTTPStatus.NOT_FOUND, "Not found.")
         except actions.ActionError as exc:
-            return self._error(exc.status, exc.message)
+            return self._error(exc.status, exc.message, exc.code, exc.params)
         except core.LockBusy as exc:
-            return self._error(HTTPStatus.CONFLICT, f"The file is busy, try again: {exc}")
+            return self._error(HTTPStatus.CONFLICT, f"The file is busy, try again: {exc}", "file_busy")
         except OSError as exc:
             core.log(self.state.ws.root, "panel", f"POST {route} failed: {exc!r}")
             return self._error(HTTPStatus.CONFLICT,
-                               f"Could not save: {exc.strerror or exc}. Another program may hold the file; try again.")
+                               f"Could not save: {exc.strerror or exc}. Another program may hold the file; try again.",
+                               "save_locked", {"detail": str(exc.strerror or exc)})
         except Exception as exc:  # noqa: BLE001
             core.log(self.state.ws.root, "panel", f"POST {route} failed: {exc!r}")
-            return self._error(HTTPStatus.INTERNAL_SERVER_ERROR, "The panel hit an error. See .agentos/logs/panel.log.")
+            return self._error(HTTPStatus.INTERNAL_SERVER_ERROR,
+                               "The panel hit an error. See .agentos/logs/panel.log.", "server_error")
 
     def _action(self, payload: dict):
         action = str(payload.get("action") or "")

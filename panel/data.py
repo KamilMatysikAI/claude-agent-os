@@ -1,6 +1,7 @@
 """Read side of the panel: scans the workspace through `agentos.core` and builds the
 JSON payloads for the four screens (Today, Decisions, Projects, Activity), the
-dependency tree and the task detail.
+organisation tree (owner -> projects -> roles -> tasks), the per-project dependency
+tree and the task detail.
 
 Rules that shaped this module:
 - Payloads carry open tasks plus the last 7 days. The full archive is sent only when
@@ -260,23 +261,32 @@ def _last_move(entries: list[Entry], project_dir: Path) -> tuple[Entry | None, d
     return best, when
 
 
-def run_now_block_reason(entry: Entry) -> str:
-    """Why the queue would NOT take this task (empty string = it would). Mirrors the
-    runner's own rules, so the panel never pretends a run started when it cannot."""
+def run_now_block(entry: Entry) -> tuple[str, dict, str]:
+    """Why the queue would NOT take this task, as (code, params, English text); all
+    empty when it would. Mirrors the runner's own rules, so the panel never pretends a
+    run started when it cannot. The code is translated by the panel (`srv.<code>`)."""
     t = entry.task
     if entry.archived:
-        return "This task is archived. Move it back to the tasks folder to run it."
+        return ("run_archived", {},
+                "This task is archived. Move it back to the tasks folder to run it.")
     if t.is_human:
-        return "This is your task. The queue only runs agent tasks."
+        return "run_human", {}, "This is your task. The queue only runs agent tasks."
     if t.s("type") == "decision":
-        return "Decisions are made by you, not by the queue."
+        return "run_decision", {}, "Decisions are made by you, not by the queue."
     if t.s("autonomy") == "ask":
-        return "This task has autonomy: ask. Run it from an interactive session instead."
+        return ("run_ask", {},
+                "This task has autonomy: ask. Run it from an interactive session instead.")
     if t.status != "todo":
-        return f"Only waiting tasks (status: todo) can be started; this one is {t.status}."
+        return ("run_not_waiting", {"state": t.status},
+                f"Only waiting tasks (status: todo) can be started; this one is {t.status}.")
     if core.lock_alive(str(t.get("lock"))):
-        return "An agent is already working on this task."
-    return ""
+        return "run_locked", {}, "An agent is already working on this task."
+    return "", {}, ""
+
+
+def run_now_block_reason(entry: Entry) -> str:
+    """English reason only (empty string = the queue would take it)."""
+    return run_now_block(entry)[2]
 
 
 def summary(entry: Entry, ws: Workspace, projects: dict, unblocks: dict | None = None) -> dict:
@@ -351,6 +361,18 @@ def recommendation(task: core.Task) -> str:
 
 # ── payloads ──────────────────────────────────────────────────────────────────
 
+PANEL_LANGUAGES = ("en", "pl")
+
+
+def panel_language(value) -> str:
+    """Panel UI language from `language` in agentos.toml ("pl", "pl-PL", "Polish" -> pl).
+    Anything without a panel dictionary falls back to English."""
+    v = str(value or "").strip().lower().replace("_", "-")
+    if v.startswith("pl") or v in ("polski", "polish"):
+        return "pl"
+    return "en"
+
+
 def meta_payload(ws: Workspace) -> dict:
     import agentos
     now = ws.now()
@@ -358,7 +380,8 @@ def meta_payload(ws: Workspace) -> dict:
         "product": getattr(agentos, "PRODUCT_NAME", "agentos"),
         "version": getattr(agentos, "__version__", ""),
         "owner_name": str(ws.cfg.get("owner_name") or "Owner"),
-        "language": str(ws.cfg.get("language") or "en"),
+        "language": panel_language(ws.cfg.get("language")),
+        "languages": list(PANEL_LANGUAGES),
         "today": now.date().isoformat(),
         "now": now.isoformat(timespec="minutes"),
         "config_error": ws.cfg.get("_error", ""),
@@ -465,6 +488,8 @@ def projects_payload(ws: Workspace) -> dict:
         wip = sum(1 for e in live if not e.task.is_human
                   and e.task.s("type") != "decision")
         last, last_when = _last_move(mine, p["dir"])
+        cur = _plan_phase(_read_text(p["dir"] / "PLAN.md"),
+                          {e.task.id: e.task.status for e in mine if not e.archived})["current"]
         health = 3 - (1 if overdue else 0) - (1 if blocked else 0)
         if overdue > 3 or wip > p["wip_limit"]:
             health = 1
@@ -479,6 +504,7 @@ def projects_payload(ws: Workspace) -> dict:
             "last_move": last_when.isoformat(timespec="minutes") if last_when else "",
             "last_title": last.task.title if last else "",
             "last_owner": (last.task.owner if last else ""),
+            "phase": cur["title"] if cur else "",
         })
     rows.sort(key=lambda r: (r["status"] != "active", r["health"], -r["open"], r["name"].lower()))
     inbox_open = sum(1 for e in entries if not e.task.project and not e.archived
@@ -486,7 +512,9 @@ def projects_payload(ws: Workspace) -> dict:
     return {"items": rows, "inbox_open": inbox_open}
 
 
-PHASE_WORD = re.compile(r"\b(phase|stage|milestone|step|sprint)\b", re.IGNORECASE)
+PHASE_WORD = re.compile(r"\b(phase|stage|milestone|step|sprint|faza|etap|krok)\b", re.IGNORECASE)
+CURRENT_MARK = re.compile(r"\((current|bieżąca|bieżący|obecna|obecny)\)|status:\s*(active|current)",
+                          re.IGNORECASE)
 TASK_REF = re.compile(r"\b([AH]-\d{1,6})\b")
 
 
@@ -514,9 +542,8 @@ def _plan_phase(plan_text: str, statuses: dict | None = None) -> dict:
                 done += 1
             else:
                 open_ += 1
-        phases.append({"title": title, "done": done, "open": open_,
-                       "current": bool(re.search(r"\(current\)|status:\s*(active|current)",
-                                                 title + chunk, re.IGNORECASE))})
+        phases.append({"title": CURRENT_MARK.sub("", title).strip(), "done": done,
+                       "open": open_, "current": bool(CURRENT_MARK.search(title + chunk))})
     current = next((p for p in phases if p["current"]), None)         or next((p for p in phases if p["open"]), None)
     return {"phases": phases, "current": current}
 
@@ -779,7 +806,7 @@ def task_payload(ws: Workspace, entry: Entry) -> dict:
     counts = _unblock_counts(entries)
     t = entry.task
     s = summary(entry, ws, projects, counts)
-    reason = run_now_block_reason(entry)
+    code, rparams, reason = run_now_block(entry)
     closed = t.status in core.CLOSED_STATUSES
     can_edit = not entry.archived
     try:
@@ -807,5 +834,96 @@ def task_payload(ws: Workspace, entry: Entry) -> dict:
             "run_now": not reason,
         },
         "run_now_reason": reason,
+        "run_now_code": code,
+        "run_now_params": rparams,
         "archived_reason": "Archived tasks are read-only in the panel." if entry.archived else "",
+    }
+
+
+# ── organisation tree ─────────────────────────────────────────────────────────
+
+ROLE_ORDER = ("ceo", "soft", "web", "copy", "marketing", "research", "human", "")
+
+
+def _org_task(s: dict) -> dict:
+    return {
+        "kind": "task", "key": s["key"], "id": s["id"], "title": s["title"],
+        "status": s["status"], "priority": s["priority"], "due": s["due"],
+        "overdue_days": s["overdue_days"], "decision": s["type"] == "decision",
+        "human": s["human"], "working": s["working"],
+        "open": 1, "in_progress": 1 if s["status"] == "in_progress" else 0,
+        "blocked": 1 if s["status"] == "blocked" else 0,
+        "overdue": 1 if s["overdue_days"] > 0 else 0, "mine": 1 if s["human"] else 0,
+    }
+
+
+def _org_task_sort(n: dict):
+    return ({"in_progress": 0, "blocked": 1, "todo": 2}.get(n["status"], 3), -n["overdue_days"],
+            core.PRIORITY_RANK.get(n["priority"], 1), n["due"] or "9999-99-99", n["id"])
+
+
+def _sum(nodes: list, field: str) -> int:
+    return sum(n[field] for n in nodes)
+
+
+def org_tree_payload(ws: Workspace) -> dict:
+    """Who works on what: owner -> projects -> roles (agents and the owner) -> open tasks.
+
+    Same data as every other screen (one scan, `summary`), only regrouped. Projects with
+    work in progress come first, then blocked ones, then by size, so the "hot" part of
+    the portfolio is at the top. Inbox tasks without a project form their own branch.
+    Labels (role names, "Inbox") are translated by the panel, not here."""
+    entries = _visible(ws.scan(), ws)
+    projects = ws.projects()
+    by_project: dict[str, dict[str, list]] = {}
+    for e in entries:
+        if e.archived or not _is_open(e.task):
+            continue
+        s = summary(e, ws, projects)
+        slug = e.task.project or ""
+        role = "human" if s["human"] else (s["owner"] if s["owner"] in core.ROLES else
+                                           (s["owner"] or ""))
+        by_project.setdefault(slug, {}).setdefault(role, []).append(_org_task(s))
+    out = []
+    for slug, roles in by_project.items():
+        p = projects.get(slug, {})
+        role_nodes = []
+        for role, tasks in roles.items():
+            tasks.sort(key=_org_task_sort)
+            role_nodes.append({
+                "kind": "role", "role": role, "slug": slug, "children": tasks,
+                "open": len(tasks), "in_progress": _sum(tasks, "in_progress"),
+                "blocked": _sum(tasks, "blocked"), "overdue": _sum(tasks, "overdue"),
+                "mine": _sum(tasks, "mine"),
+            })
+        role_nodes.sort(key=lambda r: (ROLE_ORDER.index(r["role"]) if r["role"] in ROLE_ORDER
+                                       else len(ROLE_ORDER) - 1, r["role"]))
+        tasks = [t for r in role_nodes for t in r["children"]]
+        doc = p.get("doc")
+        goal = core.get_section(doc.body, "Goal") if doc else ""
+        out.append({
+            "kind": "project", "slug": slug, "inbox": not slug,
+            "name": p.get("name", slug), "status": p.get("status", "active"),
+            "goal": re.sub(r"\s+", " ", goal).strip()[:200],
+            "wip_limit": p.get("wip_limit", 0),
+            "open": len(tasks), "in_progress": _sum(tasks, "in_progress"),
+            "blocked": _sum(tasks, "blocked"), "overdue": _sum(tasks, "overdue"),
+            "mine": _sum(tasks, "mine"), "decisions": sum(1 for t in tasks if t["decision"]),
+            "working_titles": [t["title"] for t in tasks if t["status"] == "in_progress"][:3],
+            "children": role_nodes,
+        })
+    out.sort(key=lambda p: (p["inbox"], -p["in_progress"], -p["blocked"], -p["open"],
+                            p["name"].lower()))
+    root = {"kind": "root", "name": str(ws.cfg.get("owner_name") or "Owner"),
+            "open": _sum(out, "open"), "in_progress": _sum(out, "in_progress"),
+            "blocked": _sum(out, "blocked"), "overdue": _sum(out, "overdue"),
+            "mine": _sum(out, "mine"), "children": out}
+    return {
+        "generated": ws.now().isoformat(timespec="minutes"),
+        "root": root,
+        "stats": {"projects": sum(1 for p in out if not p["inbox"]), "open": root["open"],
+                  "in_progress": root["in_progress"], "blocked": root["blocked"],
+                  "overdue": root["overdue"], "mine": root["mine"],
+                  "roles": len({r["role"] for p in out for r in p["children"]})},
+        "errors": ws.errors[:20],
     }

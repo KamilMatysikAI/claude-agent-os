@@ -45,6 +45,14 @@ except Exception:  # engine package not importable yet
 
 TEMPLATE_DIR = REPO_ROOT / "template"
 DEMO_DIR = REPO_ROOT / "demo"
+DEMO_DIRS = {"pl": REPO_ROOT / "demo-pl"}  # demo per language; anything else gets demo/
+
+
+def demo_dir_for(language) -> Path:
+    """The demo in the user's language when the package has one ("pl", "pl-PL"), else English."""
+    lang = str(language or "").strip().lower()[:2]
+    candidate = DEMO_DIRS.get(lang)
+    return candidate if candidate is not None and candidate.is_dir() else DEMO_DIR
 FULL_CONFIRMATION = "I understand"
 PROFILES = ("safe", "developer", "full")
 NOTIFY_KINDS = ("none", "file", "telegram")
@@ -527,7 +535,7 @@ def install(ans: dict, *, schedule: bool = True, schedule_print_only: bool = Fal
             run_doctor: bool = True, out=print, template_dir=None,
             demo_dir=None, create_venv: bool = False) -> Report:
     template_dir = Path(template_dir) if template_dir else TEMPLATE_DIR
-    demo_dir = Path(demo_dir) if demo_dir else DEMO_DIR
+    demo_dir = Path(demo_dir) if demo_dir else demo_dir_for(ans.get("language"))
     workspace = Path(ans["workspace"]).expanduser().resolve()
     validate_answers(ans)
     if ans["profile"] == "full" and not ans.get("full_confirmed"):

@@ -31,98 +31,109 @@
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H6M11 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></symbol>
   <symbol id="i-tree" viewBox="0 0 24 24"><path d="M6 4v16M6 9h6M6 16h6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><rect x="12" y="6.5" width="8" height="5" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="12" y="13.5" width="8" height="5" rx="1.3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M5 20h14" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
-<a class="skip" href="#main">Skip to content</a>
-<div class="offline" id="offline" role="status" hidden></div>
+<a class="skip" href="#main" data-i18n="a11y.skip">Skip to content</a>
 
 <div class="shell">
-  <aside class="side" aria-label="Main navigation">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span id="brand-name">Agent panel</span></div>
+  <aside class="side" data-i18n-attr="aria-label:a11y.main_nav">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span class="lbl" id="brand-name">Agent panel</span></div>
     <nav class="nav" id="side-nav">
-      <a href="#/today" data-view="today"><svg><use href="#i-today"/></svg><span>Today</span><b class="count" data-count="today"></b></a>
-      <a href="#/decisions" data-view="decisions"><svg><use href="#i-decide"/></svg><span>Decisions</span><b class="count count-decide" data-count="decisions"></b></a>
-      <a href="#/projects" data-view="projects"><svg><use href="#i-projects"/></svg><span>Projects</span></a>
-      <a href="#/activity" data-view="activity"><svg><use href="#i-activity"/></svg><span>Activity</span><b class="count" data-count="activity"></b></a>
-      <hr>
-      <a href="#/tasks" data-view="tasks"><svg><use href="#i-list"/></svg><span>All tasks</span></a>
+      <a href="#/today" data-view="today"><svg><use href="#i-today"/></svg><span class="lbl" data-i18n="nav.today">Today</span><b class="count" data-count="today"></b></a>
+      <a href="#/decisions" data-view="decisions"><svg><use href="#i-decide"/></svg><span class="lbl" data-i18n="nav.decisions">Decisions</span><b class="count count-decide" data-count="decisions"></b></a>
+      <a href="#/projects" data-view="projects"><svg><use href="#i-projects"/></svg><span class="lbl" data-i18n="nav.projects">Projects</span></a>
+      <a href="#/activity" data-view="activity"><svg><use href="#i-activity"/></svg><span class="lbl" data-i18n="nav.activity">Activity</span><b class="count count-agent" data-count="activity"></b></a>
+    </nav>
+    <nav class="nav-2" data-i18n-attr="aria-label:a11y.more_nav">
+      <a href="#/tasks" data-view="tasks"><svg><use href="#i-list"/></svg><span class="lbl" data-i18n="nav.tasks">All tasks</span></a>
+      <a href="#/tree" data-view="tree"><svg><use href="#i-tree"/></svg><span class="lbl" data-i18n="nav.tree">Tree</span></a>
     </nav>
     <div class="side-foot">
-      <button type="button" class="ghost" id="theme-btn"><svg><use href="#i-theme"/></svg><span id="theme-label">Theme: auto</span></button>
-      <button type="button" class="ghost" id="keys-btn"><svg><use href="#i-key"/></svg><span>Shortcuts <kbd>?</kbd></span></button>
+      <button type="button" class="btn-quiet" id="theme-btn"><svg><use href="#i-theme"/></svg><span class="lbl" id="theme-label">Theme</span></button>
+      <button type="button" class="btn-quiet" id="lang-btn" data-i18n-attr="title:lang.switch_title"><svg><use href="#i-lang"/></svg><span class="lbl" data-i18n="lang.label">Language</span><span class="lang-seg" aria-hidden="true"><b data-lang="pl">PL</b><b data-lang="en">EN</b></span></button>
+      <button type="button" class="btn-quiet" id="keys-btn"><svg><use href="#i-key"/></svg><span class="lbl" data-i18n="nav.shortcuts">Shortcuts</span> <kbd>?</kbd></button>
     </div>
   </aside>
 
   <div class="main-col">
     <header class="top">
-      <div class="top-title"><h1 id="view-title">Today</h1><span class="top-sub" id="view-sub"></span></div>
-      <form class="search" id="search-form" role="search">
-        <label class="sr" for="search">Search tasks</label>
-        <svg aria-hidden="true"><use href="#i-search"/></svg>
-        <input id="search" type="search" placeholder="Search tasks" autocomplete="off">
-        <kbd class="hint">/</kbd>
-      </form>
-      <button type="button" class="icon-btn only-mobile" id="search-mobile" aria-label="Search tasks"><svg><use href="#i-search"/></svg></button>
-      <button type="button" class="btn primary" id="new-btn"><svg><use href="#i-plus"/></svg><span>New</span><kbd class="hint">N</kbd></button>
+      <div class="top-title"><h1 id="view-title">Today</h1><span id="view-sub"></span></div>
+      <div class="top-acts">
+        <form class="search" id="search-form" role="search">
+          <label class="sr" for="search" data-i18n="search.label">Search tasks</label>
+          <svg aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="search" type="search" autocomplete="off" data-i18n-attr="placeholder:search.placeholder">
+          <kbd>/</kbd>
+        </form>
+        <button type="button" class="icon-btn only-mobile" id="search-mobile" data-i18n-attr="aria-label:search.label"><svg><use href="#i-search"/></svg></button>
+        <button type="button" class="btn-primary" id="new-btn" data-i18n-attr="aria-label:new.button_title;title:new.button_title"><svg><use href="#i-plus"/></svg><span class="lbl" data-i18n="new.button">New</span><kbd>N</kbd></button>
+      </div>
     </header>
+    <div class="offline" id="offline" role="status" hidden></div>
     <main id="main" tabindex="-1"><div class="skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i></div></main>
   </div>
 </div>
 
-<nav class="bottom" aria-label="Main navigation">
-  <a href="#/today" data-view="today"><svg><use href="#i-today"/></svg><span>Today</span><b class="count" data-count="today"></b></a>
-  <a href="#/decisions" data-view="decisions"><svg><use href="#i-decide"/></svg><span>Decisions</span><b class="count count-decide" data-count="decisions"></b></a>
-  <a href="#/projects" data-view="projects"><svg><use href="#i-projects"/></svg><span>Projects</span></a>
-  <a href="#/activity" data-view="activity"><svg><use href="#i-activity"/></svg><span>Activity</span></a>
+<nav class="bottom" data-i18n-attr="aria-label:a11y.main_nav">
+  <a href="#/today" data-view="today"><svg><use href="#i-today"/></svg><span data-i18n="nav.today">Today</span><b class="count" data-count="today"></b></a>
+  <a href="#/decisions" data-view="decisions"><svg><use href="#i-decide"/></svg><span data-i18n="nav.decisions">Decisions</span><b class="count count-decide" data-count="decisions"></b></a>
+  <a href="#/projects" data-view="projects"><svg><use href="#i-projects"/></svg><span data-i18n="nav.projects">Projects</span></a>
+  <a href="#/activity" data-view="activity"><svg><use href="#i-activity"/></svg><span data-i18n="nav.activity">Activity</span><b class="count count-agent" data-count="activity"></b></a>
 </nav>
 
-<div class="drawer-wrap" id="drawer-wrap" hidden>
+<div id="drawer-wrap" hidden>
   <div class="scrim" data-close="drawer"></div>
   <section class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1"></section>
 </div>
 
 <dialog id="new-dialog" aria-labelledby="new-title">
-  <form method="dialog" id="new-form" class="form">
-    <div class="dlg-head"><h2 id="new-title">New</h2><button type="button" class="icon-btn" data-close="new" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <form method="dialog" id="new-form">
+    <div class="dlg-head"><h2 id="new-title" data-i18n="new.title">New</h2><button type="button" class="icon-btn" data-close="new" data-i18n-attr="aria-label:common.close"><svg><use href="#i-close"/></svg></button></div>
+    <label class="field"><span data-i18n="new.what">What should happen?</span><input name="title" required maxlength="200" autocomplete="off" data-i18n-attr="placeholder:new.title_placeholder"></label>
+    <label class="field"><span><span data-i18n="new.details">Details</span> <em data-i18n="common.optional">optional</em></span><textarea name="details" rows="4" data-i18n-attr="placeholder:new.details_placeholder"></textarea></label>
     <fieldset class="seg" id="new-kind">
-      <legend class="sr">What is it</legend>
-      <label><input type="radio" name="kind" value="agent" checked><span>Task for an agent</span></label>
-      <label><input type="radio" name="kind" value="human"><span>Task for me</span></label>
-      <label><input type="radio" name="kind" value="idea"><span>Idea</span></label>
+      <legend data-i18n="new.who">Who does it</legend>
+      <label><input type="radio" name="kind" value="agent" checked><span data-i18n="new.kind_agent">Agents</span></label>
+      <label><input type="radio" name="kind" value="human"><span data-i18n="new.kind_human">Me</span></label>
+      <label><input type="radio" name="kind" value="idea"><span data-i18n="new.kind_idea">Idea for the CEO</span></label>
     </fieldset>
-    <label class="field"><span>Title</span><input name="title" required maxlength="200" autocomplete="off" placeholder="What should happen"></label>
-    <label class="field"><span>Details <em>optional</em></span><textarea name="details" rows="4" placeholder="Goal, links, what done looks like"></textarea></label>
+    <p class="hint" id="new-help"></p>
     <div class="row-fields" data-for="task">
-      <label class="field"><span>Project</span><select name="project"><option value="">Inbox (no project)</option></select></label>
-      <label class="field" data-for="agent"><span>Agent</span><select name="owner">
-        <option value="ceo">CEO (plans)</option><option value="soft">Software</option><option value="web">Web</option>
-        <option value="copy">Copy</option><option value="marketing">Marketing</option><option value="research">Research</option></select></label>
-      <label class="field"><span>Priority</span><select name="priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
-      <label class="field"><span>Due <em>optional</em></span><input type="date" name="due"></label>
+      <label class="field"><span data-i18n="new.project">Project</span><select name="project"><option value="" data-i18n="new.inbox">Inbox (no project)</option></select></label>
+      <label class="field" data-for="agent"><span data-i18n="new.agent">Agent</span><select name="owner">
+        <option value="ceo" data-i18n="new.owner_ceo">CEO (plans)</option><option value="soft" data-i18n="role.soft">Software</option><option value="web" data-i18n="role.web">Web</option>
+        <option value="copy" data-i18n="role.copy">Copy</option><option value="marketing" data-i18n="role.marketing">Marketing</option><option value="research" data-i18n="role.research">Research</option></select></label>
+      <label class="field"><span data-i18n="new.priority">Priority</span><select name="priority"><option value="normal" data-i18n="prio.normal">Normal</option><option value="high" data-i18n="prio.high">High</option><option value="low" data-i18n="prio.low">Low</option></select></label>
+      <label class="field"><span><span data-i18n="new.due">Due</span> <em data-i18n="common.optional">optional</em></span><input type="date" name="due"></label>
     </div>
-    <p class="form-help" id="new-help">The queue picks agent tasks up on its next run.</p>
     <p class="form-error" id="new-error" role="alert" hidden></p>
-    <div class="dlg-actions"><button type="button" class="btn" data-close="new">Cancel</button><button type="submit" class="btn primary" id="new-submit">Create</button></div>
+    <div class="dlg-actions"><button type="button" class="btn-quiet" data-close="new" data-i18n="common.cancel">Cancel</button><button type="submit" class="btn-primary" id="new-submit" data-i18n="new.submit">Create</button></div>
   </form>
 </dialog>
 
 <dialog id="keys-dialog" aria-labelledby="keys-title">
-  <div class="dlg-head"><h2 id="keys-title">Keyboard shortcuts</h2><button type="button" class="icon-btn" data-close="keys" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="dlg-head"><h2 id="keys-title" data-i18n="keys.title">Keyboard shortcuts</h2><button type="button" class="icon-btn" data-close="keys" data-i18n-attr="aria-label:common.close"><svg><use href="#i-close"/></svg></button></div>
   <dl class="keys">
-    <dt><kbd>G</kbd> <kbd>D</kbd></dt><dd>Today</dd>
-    <dt><kbd>G</kbd> <kbd>E</kbd></dt><dd>Decisions</dd>
-    <dt><kbd>G</kbd> <kbd>P</kbd></dt><dd>Projects</dd>
-    <dt><kbd>G</kbd> <kbd>A</kbd></dt><dd>Activity</dd>
-    <dt><kbd>/</kbd></dt><dd>Search tasks</dd>
-    <dt><kbd>N</kbd></dt><dd>New task or idea</dd>
-    <dt><kbd>J</kbd> <kbd>K</kbd></dt><dd>Next / previous item</dd>
-    <dt><kbd>Enter</kbd></dt><dd>Open item</dd>
-    <dt><kbd>A</kbd></dt><dd>Accept decision (press twice, or A then Enter)</dd>
-    <dt><kbd>O</kbd></dt><dd>Reject decision (press twice, or O then Enter)</dd>
-    <dt><kbd>C</kbd></dt><dd>Write a comment</dd>
-    <dt><kbd>S</kbd></dt><dd>Skip to the next decision</dd>
-    <dt><kbd>Z</kbd></dt><dd>Undo the last action (5 s)</dd>
-    <dt><kbd>Esc</kbd></dt><dd>Close</dd>
+    <dt><kbd>G</kbd> <kbd>D</kbd></dt><dd data-i18n="nav.today">Today</dd>
+    <dt><kbd>G</kbd> <kbd>E</kbd></dt><dd data-i18n="nav.decisions">Decisions</dd>
+    <dt><kbd>G</kbd> <kbd>P</kbd></dt><dd data-i18n="nav.projects">Projects</dd>
+    <dt><kbd>G</kbd> <kbd>A</kbd></dt><dd data-i18n="nav.activity">Activity</dd>
+    <dt><kbd>G</kbd> <kbd>T</kbd></dt><dd data-i18n="nav.tree">Tree</dd>
+    <dt><kbd>/</kbd></dt><dd data-i18n="search.label">Search tasks</dd>
+    <dt><kbd>N</kbd></dt><dd data-i18n="keys.new">New task or idea</dd>
+    <dt><kbd>J</kbd> <kbd>K</kbd></dt><dd data-i18n="keys.next_prev">Next / previous item</dd>
+    <dt><kbd>Enter</kbd></dt><dd data-i18n="keys.open">Open item</dd>
+    <dt><kbd>A</kbd> <kbd>A</kbd></dt><dd data-i18n="keys.accept">Accept decision (a second A or Enter confirms)</dd>
+    <dt><kbd>O</kbd> <kbd>O</kbd></dt><dd data-i18n="keys.reject">Reject decision (the same way)</dd>
+    <dt><kbd>C</kbd></dt><dd data-i18n="keys.comment">Write a comment</dd>
+    <dt><kbd>S</kbd></dt><dd data-i18n="keys.skip">Skip to the next decision</dd>
+    <dt><kbd>Z</kbd></dt><dd data-i18n="keys.undo">Undo the last action (5 s)</dd>
+    <dt><kbd>F</kbd> <kbd>U</kbd></dt><dd data-i18n="keys.tree">Tree: fit to screen, switch layout</dd>
+    <dt><kbd>L</kbd></dt><dd data-i18n="keys.lang">Switch language (PL / EN)</dd>
+    <dt><kbd>Esc</kbd></dt><dd data-i18n="common.close">Close</dd>
   </dl>
 </dialog>
 
