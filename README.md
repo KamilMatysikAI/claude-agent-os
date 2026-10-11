@@ -29,7 +29,7 @@ It grew out of a real business that is not a software house (property developmen
 Requirements: Python 3.11+, [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and logged in, git. No other dependencies: the engine is stdlib only.
 
 ```bash
-git clone https://github.com/TODO/claude-agent-os.git
+git clone https://github.com/KamilMatysikAI/claude-agent-os.git
 cd claude-agent-os
 python install.py            # wizard: workspace folder, name, language, time zone, queue, panel, notifications, rule packs, demo
 cd <your-workspace>
@@ -244,10 +244,12 @@ Those are mostly built around writing software or need a server. This one is fil
 
 ## Support
 
-Free and MIT. If it saved you time:
+Free and MIT. If it saved you a few hours, you can buy me a coffee (the **Sponsor** button at the top of this repo does the same):
 
-- [GitHub Sponsors](TODO)
-- [Ko-fi](TODO)
+- [Buy Me a Coffee](TODO-BMC) (card, Apple Pay, Google Pay)
+- [buycoffee.to](TODO-BUYCOFFEE) (Poland: BLIK, bank transfer)
+
+A star helps other people find the repo.
 
 Issues and pull requests are welcome. Security problems: see [SECURITY.md](SECURITY.md#reporting-a-vulnerability).
 
@@ -262,7 +264,7 @@ System powstał w firmie spoza IT (deweloperka, e-commerce, wynajem) i działa t
 Start:
 
 ```bash
-git clone https://github.com/TODO/claude-agent-os.git
+git clone https://github.com/KamilMatysikAI/claude-agent-os.git
 cd claude-agent-os
 python install.py
 cd <twój-katalog>
@@ -275,7 +277,7 @@ Instalator tworzy w katalogu roboczym osobne środowisko Pythona (`.agentos/venv
 
 Zanim włączysz kolejkę, przeczytaj [SECURITY.md](SECURITY.md). `claude -p` uruchamiane z harmonogramu korzysta z Twojego konta Claude albo klucza API, a to, czy i ile automatycznej pracy wolno, zależy od planu i aktualnego regulaminu Anthropic. Najczystsza droga to klucz API.
 
-Licencja MIT. Napiwek: [GitHub Sponsors](TODO), [Ko-fi](TODO).
+Licencja MIT. Jeśli oszczędziło Ci to kilka godzin, możesz postawić kawę: [buycoffee.to](TODO-BUYCOFFEE) (BLIK, przelew) albo [Buy Me a Coffee](TODO-BMC) (karta).
 
 ---
 
