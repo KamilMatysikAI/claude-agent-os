@@ -4,7 +4,7 @@
 :root {
   --bg: #F5F6F8; --surface: #FFFFFF; --surface-2: #EDEFF3; --line: #D9DDE3;
   --text: #14181D; --text-2: #55606C;
-  --decide: #9A6400; --ok: #167A52; --stop: #B42E28; --agent: #2F5BD3;
+  --decide: #855600; --ok: #167A52; --stop: #B42E28; --agent: #2F5BD3;
   --decide-soft: #FDF6E8; --stop-soft: #FBE9E8; --ok-soft: #E3F3EB; --agent-soft: #E7EDFC;
   --font-display: "Segoe UI Variable Display", "SF Pro Display", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-text: "Segoe UI Variable Text", "SF Pro Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
