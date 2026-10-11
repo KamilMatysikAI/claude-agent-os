@@ -45,7 +45,7 @@ Then, inside Claude Code:
 /new-project    goal -> measurable success criterion with a date -> first plan and tasks from the ceo
 ```
 
-Want to look around first? `python install.py --with-demo` adds two fictional projects (a coffee subscription shop and a podcast launch) with tasks in every state: open decisions, overdue human tasks, blocked chains, work in progress. See [demo/README.md](demo/README.md).
+Want to look around first? `python install.py --with-demo` adds two fictional projects (a coffee subscription shop and a podcast launch) with tasks in every state: open decisions, overdue human tasks, blocked chains, work in progress. See [demo/README.md](demo/README.md). With `--language pl` the installer copies the Polish demo instead: eight small businesses, 85 tasks, 8 open decisions ([demo-pl/README.md](demo-pl/README.md)).
 
 Non-interactive install, for scripts and CI:
 
@@ -174,7 +174,7 @@ Read [SECURITY.md](SECURITY.md) before you switch the queue on. The short versio
 
 ## Panel (optional)
 
-A local web page over the same files: **Today** (what needs you: decisions, your short tasks, agents waiting on you), a **decision stack** (accept or reject with a note, 5 seconds to undo), **projects** with a dependency tree (what waits on what), **activity** (what was closed, who is working now), all tasks, a form to add a task or an idea (ideas use `ideas/.templates/idea.md`, like `/add-idea`), and "run now" for a single agent task. Light and dark theme, works on a phone.
+A local web page over the same files: **Today** (what needs you: decisions, your short tasks, agents waiting on you), a **decision stack** (accept or reject with a note, 5 seconds to undo), **projects** (health, blocks, WIP; each project page shows what waits on what), the **tree** (who works on what across the whole portfolio), **activity** (what was closed, who is working now), all tasks, a form to add a task or an idea (ideas use `ideas/.templates/idea.md`, like `/add-idea`), and "run now" for a single agent task. Light and dark theme, works on a phone.
 
 Start it from the workspace folder. `--port` overrides `[panel] port` in `agentos.toml`:
 
@@ -185,14 +185,20 @@ Start it from the workspace folder. `--port` overrides `[panel] port` in `agento
 
 It has no login and binds to `127.0.0.1`. Do not expose it to a network you do not control.
 
-Screenshots from the demo workspace (`--with-demo`):
+**Language.** The panel speaks English and Polish. The default comes from `language` in `agentos.toml` (`pl`, `pl-PL` or `polish` give Polish, anything else English). The PL / EN switch in the sidebar (or the `L` key, or `?lang=pl` in the address) changes it for this browser and is remembered. Plurals and dates follow the language (`1 zadanie`, `2 zadania`, `5 zadań`; `Sun 11 Oct` / `niedz. 11.10`). Task files stay as they are: section names like `## Goal` are part of the file contract and are only shown translated. All texts live in `panel/static/i18n.en.json` and `i18n.pl.json`; a new language is one more dictionary plus one line in `i18n.js`.
 
-| Today | Decisions | Dependency tree |
+**Tree.** One canvas: you at the root, curves out to every project, then the roles working on it (CEO, Software, Web, Copy, Marketing, Research and you) with their counts, then the open tasks. Colour is state only: grey waiting, blue an agent at work, red blocked or overdue, amber a decision, black your tasks. Filters (Everything, Mine, In progress, Overdue, Blocked), "Expand tasks" / "Collapse to projects", three layouts (compact, expanded, radial; `U`), "Fit" (`F`), drag to pan, wheel or pinch to zoom, "Save PNG" for a picture of the whole portfolio. On a phone it opens a shortcut to the projects table, with "Show the tree anyway".
+
+Screenshots from the demo workspaces (`--with-demo`), English and Polish:
+
+| Today | Decisions | Tree |
 |---|---|---|
-| ![Today](docs/screenshots/panel-today-1440.png) | ![Decision stack](docs/screenshots/panel-decisions-1440.png) | ![Dependency tree](docs/screenshots/panel-tree-1440.png) |
-| ![Today, dark](docs/screenshots/panel-today-dark-1440.png) | ![Decision stack, dark](docs/screenshots/panel-decisions-dark-1440.png) | ![Dependency tree, dark](docs/screenshots/panel-tree-dark-1440.png) |
+| ![Today](docs/screenshots/panel-today-1440.png) | ![Decision stack](docs/screenshots/panel-decisions-1440.png) | ![Tree](docs/screenshots/panel-tree-1440.png) |
+| ![Dziś](docs/screenshots/panel-today-pl-1440.png) | ![Stos decyzji](docs/screenshots/panel-decisions-pl-1440.png) | ![Drzewo](docs/screenshots/panel-tree-pl-1440.png) |
+| ![Today, dark](docs/screenshots/panel-today-dark-1440.png) | ![Decision stack, dark](docs/screenshots/panel-decisions-dark-1440.png) | ![Drzewo, ciemny](docs/screenshots/panel-tree-dark-pl-1440.png) |
 
-On a phone (390 px): [Today](docs/screenshots/panel-today-390.png) · [Decisions](docs/screenshots/panel-decisions-390.png) · [Tree](docs/screenshots/panel-tree-390.png) · [Today, dark](docs/screenshots/panel-today-dark-390.png) · [Decisions, dark](docs/screenshots/panel-decisions-dark-390.png) · [Tree, dark](docs/screenshots/panel-tree-dark-390.png). More: [project](docs/screenshots/panel-project-1440.png), [task](docs/screenshots/panel-task-1440.png), [activity](docs/screenshots/panel-activity-1440.png), [projects list](docs/screenshots/panel-projects-1440.png).
+More in English: [projects](docs/screenshots/panel-projects-1440.png), [project](docs/screenshots/panel-project-1440.png), [task](docs/screenshots/panel-task-1440.png), [activity](docs/screenshots/panel-activity-1440.png), [tree with tasks](docs/screenshots/panel-tree-expanded-1440.png); phone: [Today](docs/screenshots/panel-today-390.png), [Decisions](docs/screenshots/panel-decisions-390.png), [Tree](docs/screenshots/panel-tree-390.png), [Today, dark](docs/screenshots/panel-today-dark-390.png).
+More in Polish: [projekty](docs/screenshots/panel-projects-pl-1440.png), [projekt](docs/screenshots/panel-project-pl-1440.png), [zadanie](docs/screenshots/panel-task-pl-1440.png), [aktywność](docs/screenshots/panel-activity-pl-1440.png), [drzewo z zadaniami](docs/screenshots/panel-tree-expanded-pl-1440.png), [drzewo radialne](docs/screenshots/panel-tree-radial-pl-1440.png); telefon: [Dziś](docs/screenshots/panel-today-pl-390.png), [Decyzje](docs/screenshots/panel-decisions-pl-390.png), [Drzewo](docs/screenshots/panel-tree-pl-390.png), [Drzewo mimo to](docs/screenshots/panel-tree-forced-pl-390.png), [zadanie](docs/screenshots/panel-task-pl-390.png), [Dziś, ciemny](docs/screenshots/panel-today-dark-pl-390.png).
 
 ---
 
@@ -272,6 +278,8 @@ claude
 ```
 
 W Claude Code: `/setup`, potem `/new-project`. Agenci piszą do Ciebie po polsku, gdy w `agentos.toml` ustawisz `language = "pl"`. Pliki, kod i nazwy pól zostają po angielsku.
+
+Panel (`python -P -m agentos panel`) też mówi po polsku: przy `language = "pl"` startuje po polsku, a przełącznik PL / EN w menu (albo klawisz `L`) zmienia język w tej przeglądarce. Ekran **Drzewo** pokazuje, kto nad czym pracuje: Ty w środku, od Ciebie projekty, pod nimi role z licznikami, kolor to stan (w toku, zablokowane albo po terminie, decyzja, Twoje). `python install.py --language pl --with-demo` kopiuje polskie demo: osiem zmyślonych firm, 85 zadań, 8 decyzji.
 
 Instalator tworzy w katalogu roboczym osobne środowisko Pythona (`.agentos/venv`) i instaluje w nim silnik, systemowego Pythona nie rusza. Polecenia silnika uruchamiasz z katalogu roboczego: `.agentos/venv/bin/python -P -m agentos status` (Windows: `.agentos/venv/Scripts/python`).
 
