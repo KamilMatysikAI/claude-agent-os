@@ -227,10 +227,10 @@ Photos are in `materials/photos/`. Agent shortlist: 2, 3, 5, 8, 11, 14.
 """)
     _task(p, "tasks/A-007-newsletter-signup.md",
           _meta(today, "A-007", "coffee-shop", "Add a newsletter signup box", "web",
-                status="cancelled", closed=-1), f"""
+                status="cancelled", closed=0), f"""
 ## Progress log
 
-- {d(-1)} 12:00 — status todo -> cancelled: owner moved it to the newsletter project
+- {d(0)} 00:01 — status todo -> cancelled: owner moved it to the newsletter project
 """)
     _task(p, "tasks/A-008-seo-basics.md",
           _meta(today, "A-008", "coffee-shop", "SEO basics: titles, sitemap, robots", "web",

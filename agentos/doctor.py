@@ -107,6 +107,8 @@ def iter_text_files(root: Path, skip_dirs: Iterable[str] = SKIP_DIRS) -> Iterabl
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in skip]
         for fn in filenames:
+            if fn in skip:  # a git worktree has a `.git` FILE pointing at the main repo
+                continue
             p = Path(dirpath) / fn
             try:
                 head = p.read_bytes()[:8192]
