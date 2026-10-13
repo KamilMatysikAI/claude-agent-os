@@ -6,7 +6,7 @@ A `ceo` agent turns your goal into a plan and tasks. Five roles (marketing, copy
 
 It grew out of a real business that is not a software house (property development, online retail, rentals) and has been running there since August 2026. The 40 rules in this repo were written after things went wrong there.
 
-> Status: v0.1.0. Works on Windows, macOS and Linux (CI on all three). Expect rough edges.
+> Status: v0.1.1. Works on Windows, macOS and Linux (CI on all three). Expect rough edges.
 
 ---
 

@@ -6,6 +6,14 @@ have to do anything after updating.
 How to update: `git pull`, then run `python install.py` again with the same workspace.
 The installer reinstalls the engine and leaves your files alone.
 
+## 0.1.1 - 2026-10-13
+
+- Panel: starts right away on machines where a reverse DNS lookup is slow (seen on macOS,
+  where the first page could take over 20 seconds to appear).
+- CI: secret scan runs with the gitleaks CLI; the start-up test says why the panel did not answer.
+
+After updating: nothing to do.
+
 ## 0.1.0 - 2026-10-13
 
 First public release.

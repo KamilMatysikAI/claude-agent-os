@@ -56,8 +56,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      # The gitleaks CLI (MIT) instead of gitleaks-action, which needs a licence key for
+      # organisation-owned repositories. Scans the whole history.
+      - name: Download gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # organisation-owned repositories additionally need GITLEAKS_LICENSE (free key)
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo gitleaks/gitleaks --pattern '*_linux_x64.tar.gz' --dir "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP"/gitleaks/*_linux_x64.tar.gz -C "$RUNNER_TEMP/gitleaks" gitleaks
+      - name: Scan
+        run: '"$RUNNER_TEMP/gitleaks/gitleaks" detect --source . --redact --no-banner'
