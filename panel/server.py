@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import socketserver
 import sys
 import threading
 from http import HTTPStatus
@@ -245,6 +246,17 @@ class Handler(BaseHTTPRequestHandler):
         return self._json({"ok": True, **result})
 
 
+class PanelServer(ThreadingHTTPServer):
+    """HTTPServer.server_bind() calls socket.getfqdn(), a reverse DNS lookup that can take many
+    seconds on some machines (seen on macOS). The panel never needs its own host name."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        host, port = self.server_address[:2]
+        self.server_name = str(host)
+        self.server_port = port
+
+
 def make_server(workspace: Path, host: str | None = None, port: int | None = None,
                 undo_seconds: float = actions.UNDO_SECONDS, spawn=None):
     cfg = core.load_config(workspace)
@@ -254,7 +266,7 @@ def make_server(workspace: Path, host: str | None = None, port: int | None = Non
     bind_host = host or pcfg.get("host", "127.0.0.1")
     bind_port = pcfg.get("port", 8777) if port is None else port
     state.allowed_hosts.add(str(bind_host).lower())
-    httpd = ThreadingHTTPServer((bind_host, bind_port), handler)
+    httpd = PanelServer((bind_host, bind_port), handler)
     httpd.daemon_threads = True
     httpd.panel_state = state  # type: ignore[attr-defined]
     return httpd

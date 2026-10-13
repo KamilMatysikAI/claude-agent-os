@@ -194,14 +194,17 @@ def test_panel_serves_every_get_endpoint(installed):
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
         deadline = time.time() + 20
+        last = "no answer yet"
         while True:
             try:
-                if _get(port, "/api/meta")[0] == 200:
+                status, body = _get(port, "/api/meta")
+                if status == 200:
                     break
-            except OSError:
-                pass
+                last = f"HTTP {status}: {body[:300]!r}"
+            except OSError as exc:
+                last = f"{type(exc).__name__}: {exc}"
             assert proc.poll() is None, proc.stdout.read().decode("utf-8", "replace")
-            assert time.time() < deadline, "panel did not start"
+            assert time.time() < deadline, f"panel did not start; last attempt: {last}"
             time.sleep(0.2)
 
         for path in ("/", "/index.html", "/app.js", "/styles.css", "/favicon.svg"):
