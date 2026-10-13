@@ -21,6 +21,8 @@
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.5 7.5l7.5 5.5 7.5-5.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-update" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 16.5v-8M8.5 11.5L12 8l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5c0 1.2 1 1.3 1 2.5M12 3.5c0 1.2 1 1.3 1 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 10h1M11 10h1M15 10h2M7 14h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
@@ -55,6 +57,8 @@
     <div class="side-foot">
       <button type="button" class="btn-quiet" id="theme-btn"><svg><use href="#i-theme"/></svg><span class="lbl" id="theme-label">Theme</span></button>
       <button type="button" class="btn-quiet" id="lang-btn" data-i18n-attr="title:lang.switch_title"><svg><use href="#i-lang"/></svg><span class="lbl" data-i18n="lang.label">Language</span><span class="lang-seg" aria-hidden="true"><b data-lang="pl">PL</b><b data-lang="en">EN</b></span></button>
+      <a class="btn-quiet update-link" id="update-link" href="https://github.com/KamilMatysikAI/claude-agent-os/releases" target="_blank" rel="noopener noreferrer" hidden><svg><use href="#i-update"/></svg><span class="lbl" id="update-label">New version</span></a>
+      <a class="btn-quiet updates-link" href="https://kamilmatysik.pl/agent-os/en/" target="_blank" rel="noopener noreferrer" data-i18n-attr="href:updates.url;title:updates.title"><svg><use href="#i-mail"/></svg><span class="lbl" data-i18n="updates.label">Get updates by e-mail</span></a>
       <a class="btn-quiet coffee-link" href="https://buymeacoffee.com/kamilmatysik" target="_blank" rel="noopener noreferrer" data-i18n-attr="href:coffee.url;title:coffee.title"><svg><use href="#i-coffee"/></svg><span class="lbl" data-i18n="coffee.label">Buy the author a coffee</span></a>
       <button type="button" class="btn-quiet" id="keys-btn"><svg><use href="#i-key"/></svg><span class="lbl" data-i18n="nav.shortcuts">Shortcuts</span> <kbd>?</kbd></button>
     </div>

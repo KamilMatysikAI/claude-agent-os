@@ -375,6 +375,7 @@ def panel_language(value) -> str:
 
 def meta_payload(ws: Workspace) -> dict:
     import agentos
+    from agentos import updates
     now = ws.now()
     return {
         "product": getattr(agentos, "PRODUCT_NAME", "agentos"),
@@ -385,6 +386,7 @@ def meta_payload(ws: Workspace) -> dict:
         "today": now.date().isoformat(),
         "now": now.isoformat(timespec="minutes"),
         "config_error": ws.cfg.get("_error", ""),
+        "update": updates.status(ws.root, ws.cfg),
     }
 
 

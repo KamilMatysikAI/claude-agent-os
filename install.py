@@ -271,6 +271,9 @@ digest_hours = [8, 15, 21]   # effects only, batched; failures go to log + one d
 enabled = {str(bool(ans['panel'])).lower()}
 host = "127.0.0.1"
 port = 8777
+
+[updates]
+check = true                 # panel asks GitHub once a day whether a newer release exists; false = never
 """
 
 

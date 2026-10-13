@@ -1135,6 +1135,19 @@ function syncLangUi() {
   $$("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === getLang()));
   $("#theme-label").textContent = themeLabel();
   if (S.meta) $("#brand-name").textContent = S.meta.product || t("common.panel");
+  syncUpdateUi();
+}
+/** Sidebar link shown only when the daily check found a newer release (off: [updates] check = false). */
+function syncUpdateUi() {
+  const link = $("#update-link");
+  const up = S.meta?.update;
+  if (!link) return;
+  if (!up?.available || !/^https:\/\/github\.com\//.test(up.url || "")) { link.hidden = true; return; }
+  const vars = { version: up.latest, current: S.meta.version || "" };
+  link.href = up.url;
+  link.title = t("updates.available_title", vars);
+  $("#update-label").textContent = t("updates.available", vars);
+  link.hidden = false;
 }
 async function toggleLang() {
   await setLang(getLang() === "pl" ? "en" : "pl");

@@ -27,3 +27,6 @@ digest_hours = [8, 15, 21]
 enabled = false
 host = "127.0.0.1"
 port = 8777
+
+[updates]
+check = true

@@ -44,6 +44,9 @@ DEFAULTS: dict = {
         "host": "127.0.0.1",
         "port": 8777,
     },
+    "updates": {
+        "check": True,
+    },
 }
 
 
@@ -111,6 +114,10 @@ def normalize(cfg: dict) -> dict:
     pn["port"] = _as_int(pn.get("port"), 8777, minimum=1)
     pn["host"] = str(pn.get("host") or "127.0.0.1")
     pn["enabled"] = bool(pn.get("enabled"))
+    up = cfg.get("updates")
+    if not isinstance(up, dict):
+        up = cfg["updates"] = {"check": True}
+    up["check"] = bool(up.get("check", True))
     return cfg
 
 

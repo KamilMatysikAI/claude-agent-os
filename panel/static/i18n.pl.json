@@ -13,6 +13,11 @@
   "coffee.label": "Postaw kawę autorowi",
   "coffee.title": "Opcjonalny napiwek dla autora (BLIK, przelew, buycoffee.to)",
   "coffee.url": "https://buycoffee.to/kamilmatysik",
+  "updates.label": "Aktualizacje na e-mail",
+  "updates.title": "Jeden e-mail, gdy wyjdzie nowa wersja (otwiera stronę zapisu autora)",
+  "updates.url": "https://kamilmatysik.pl/agent-os/",
+  "updates.available": "Nowa wersja {version}",
+  "updates.available_title": "Wyszła wersja {version}, masz {current}. Otwiera opis zmian; aktualizacja: git pull i install.py",
 
   "lang.label": "Język",
   "lang.switch_title": "Zmień język panelu (L)",

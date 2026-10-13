@@ -105,6 +105,9 @@ digest_hours = [8, 15, 21]   # effects only, batched; failures go to log + one d
 enabled = false
 host = "127.0.0.1"
 port = 8777
+
+[updates]
+check = true                 # panel: one anonymous GET a day to the GitHub releases API; false = never (also AGENTOS_NO_UPDATE_CHECK=1)
 ```
 
 ## CLI (single entry point, used by scheduler, panel and docs)

@@ -25,7 +25,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 if __package__ in (None, ""):  # `python panel/server.py`
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agentos import core  # noqa: E402
+from agentos import core, updates  # noqa: E402
 
 from panel import actions, data  # noqa: E402
 
@@ -143,6 +143,7 @@ class Handler(BaseHTTPRequestHandler):
         ws = self.state.ws
         one = lambda name, default="": (qs.get(name) or [default])[0]  # noqa: E731
         if route == "meta":
+            updates.refresh_async(ws.root, ws.cfg)   # at most one anonymous request a day, off in agentos.toml
             return self._json(data.meta_payload(ws))
         if route == "today":
             return self._json(data.today_payload(ws))

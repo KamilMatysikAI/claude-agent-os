@@ -123,6 +123,13 @@ Offline install: if pip cannot build the package (no network and no `setuptools`
 
 To update after `git pull`, run `python install.py` again with the same workspace. It reinstalls the engine into the venv and leaves your files alone.
 
+### Updates
+
+- **What changed:** [CHANGELOG.md](CHANGELOG.md) and the [releases page](https://github.com/KamilMatysikAI/claude-agent-os/releases). Each entry says whether you have to do anything after updating.
+- **In the panel:** when a newer release is out, the sidebar shows "New version" with a link to the release notes. The panel asks the public GitHub API once a day, sends nothing about your workspace and installs nothing. To turn it off, set `check = false` under `[updates]` in `agentos.toml`, or set `AGENTOS_NO_UPDATE_CHECK=1`.
+- **By e-mail:** one message when a new version is out: [sign up here](https://kamilmatysik.pl/agent-os/en/) ([po polsku](https://kamilmatysik.pl/agent-os/)). Unsubscribe with one click.
+- **On GitHub:** Watch → Custom → Releases.
+
 Skills that ship with the workspace: `setup`, `new-project`, `project`, `agent-queue`, `create-task`, `end`, `premortem`, `reflect`, `memory-update`, `design-audit`, `add-idea`. Full file and field reference: [CONTRACT.md](CONTRACT.md).
 
 ---

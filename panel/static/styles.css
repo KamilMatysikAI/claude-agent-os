@@ -113,6 +113,8 @@ body.is-offline .needs-net { opacity: .5; pointer-events: none; }
 .count-agent:not(:empty) { color: var(--agent); }
 .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
 .side-foot .btn-quiet { justify-content: flex-start; width: 100%; font-size: var(--fs-13); }
+.side-foot .update-link { color: var(--text); font-weight: 600; }
+.side-foot .update-link[hidden] { display: none; }
 .lang-seg { display: inline-flex; margin-left: auto; border: 1px solid var(--line-2); border-radius: var(--r1); overflow: hidden; }
 .lang-seg b { font: 600 11px/1 var(--f-data); padding: 3px 6px; color: var(--text-2); }
 .lang-seg b.on { background: var(--text); color: var(--bg); }
