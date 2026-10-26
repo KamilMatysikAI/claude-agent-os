@@ -120,8 +120,9 @@ python -m agentos notify-digest
 python -m agentos doctor
 python -m agentos schedule install|remove|status
 python -m agentos panel                # if panel installed
+python -m agentos usage [--hours N] [--logs DIR]   # token usage per session/subagent from Claude Code logs
 ```
-All commands take `--workspace PATH` (default: walk up from cwd to find `agentos.toml`).
+All commands except `usage` take `--workspace PATH` (default: walk up from cwd to find `agentos.toml`). `usage` reads the machine's Claude Code logs (`$CLAUDE_CONFIG_DIR/projects` or `~/.claude/projects`), not the workspace.
 Generated commands (tick.py, panel run-now, workspace CLAUDE.md and skills via the `{{engine}}` placeholder) run `<workspace>/.agentos/venv/{bin|Scripts}/python -P -m agentos`; `python -m agentos` from the repo folder stays the fallback (`--no-venv`). Path helpers: `agentos/env.py`.
 Library API in `agentos/core.py` (engine owns; panel and installer import it): `load_config`, `find_workspace`, `iter_tasks`, `read_task`, `write_task_atomic`, `set_status(task, status, evidence=None)`, `decide(task, accepted: bool, note: str)`, `add_note`, `next_id`, `acquire_lock/release_lock`, `create_task(...)`.
 

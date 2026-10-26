@@ -51,3 +51,11 @@ Several sessions often work at the same time: the scheduled queue, a terminal se
 **Why.** Rules in your context are not in the subagent's context. Several of the incidents above were caused by subagents that never saw the rule their parent session followed.
 
 **How to apply.** Keep a short standard block for subagent prompts and paste it every time. It costs a few lines and has prevented repeat incidents.
+
+## 41. Background agents never sleep past the cache
+
+**Rule.** A subagent or background agent never waits longer than about 4 minutes in one call (sleep loops, polling a lock, a long test run in the foreground). Long test runs, imports and builds go to the background with a completion notice, or are checked in short calls. After 2 to 3 hours of work, or around 300k tokens of context, the agent writes its progress into the task log and stops; a fresh agent continues from the task file, including fixes after review.
+
+**Why.** Five coding agents ran for 13 to 20 hours each, grew to 450k-800k tokens of context and waited for tests with a 10-minute `sleep` loop. A subagent's prompt cache lives 5 minutes (the main session's lives an hour), so every wake-up wrote the whole context again: about 300 rewrites of 400k-550k tokens. That was about 70% of a weekly plan limit in less than a day. The model was blamed first; the logs showed it was the waiting.
+
+**How to apply.** Put "no wait over 4 minutes in one call, long runs in the background, hand over after 2-3 hours" into the standard subagent block (rule 28). Run `python -P -m agentos usage` when the limit drops faster than expected; it lists sessions and subagents by share and flags this pattern.

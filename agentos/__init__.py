@@ -5,4 +5,4 @@ editable by hand (Obsidian, any editor). The engine is stdlib-only.
 """
 
 PRODUCT_NAME = "claude-agent-os"
-__version__ = "0.1.1"
+__version__ = "0.1.2"

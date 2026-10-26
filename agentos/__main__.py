@@ -16,6 +16,7 @@ DELEGATED = {
     "doctor": ("agentos.doctor", "the doctor module ships with the installer"),
     "schedule": ("agentos.scheduler", "the scheduler ships with the installer"),
     "panel": ("panel", "the panel is optional; install it to use this command"),
+    "usage": ("agentos.usage", "the usage report ships with the engine"),
 }
 
 
